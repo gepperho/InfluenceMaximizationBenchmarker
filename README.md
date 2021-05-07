@@ -1,6 +1,9 @@
 # InfluenceMaximizationBenchmarker
 
-The InfluenceMaximizationBenchmarker (IMB) is a benchmark suite first published at GRADES-NDA 2021.
+The InfluenceMaximizationBenchmarker (IMB) is a benchmark suite first published at GRADES-NDA 2021:
+
+> Heiko Geppert, Sukanya Bhowmik, and Kurt Rothermel. 2021. Large-scale Influence Maximization with the Influence Maximization Benchmarker Suite. In 4th Joint International Workshop on Graph Data Management Experiences & Systems (GRADES) and Network Data Analytics (NDA) (GRADES-NDA’21), June 20–25, 2021, Virtual Event, China. ACM, New York, NY, USA, 11 pages. https://doi.org/10.1145/3461837.3464510
+
 IMB provides easy to use implementation of the Influence Maximization (IM) problem.
 
 
@@ -67,6 +70,7 @@ J. Kim, S. Kim and H. Yu, "Scalable and parallelizable processing of influence m
 Sainyam Galhotra, Akhil Arora, and Shourya Roy. 2016. Holistic Influence Maximization: Combining Scalability and Efficiency with Opinion-Aware Models. In <i>Proceedings of the 2016 International Conference on Management of Data</i> (<i>SIGMOD '16</i>). Association for Computing Machinery, New York, NY, USA, 743–758. DOI:https://doi.org/10.1145/2882903.2882929
 
 **Update Approximation:** 
+Heiko Geppert, Sukanya Bhowmik, and Kurt Rothermel. 2021. Large-scale Influence Maximization with the Influence Maximization Benchmarker Suite. In 4th Joint International Workshop on Graph Data Management Experiences & Systems (GRADES) and Network Data Analytics (NDA) (GRADES-NDA’21), June 20–25, 2021, Virtual Event, China. ACM, New York, NY, USA, 11 pages. https://doi.org/10.1145/3461837.3464510
 
 
 **IMM:** 
