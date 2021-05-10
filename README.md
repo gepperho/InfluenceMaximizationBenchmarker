@@ -27,7 +27,7 @@ make -j4
 
 Running Degree Discount and Update Approximation (UA) with a hop distance of 3 on the epinions vertex list. 
 
-`./InfluenceMaximizer --graph ../data/epinions.txt --format 1 --algorithm degree,ua,3`
+`./InfluenceMaximizationBenchmarker --graph ../data/epinions.txt --format 0 --algorithm degree,ua,3`
 
 ### Parameters
 | short parameter | long parameter | type | description |
