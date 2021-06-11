@@ -1,7 +1,5 @@
 #include <execution>
-#include <fmt/core.h>
 #include <fmt/ranges.h>
-#include <numeric>
 #include <solver/iterative/EaSyIM.hpp>
 
 EaSyIM::EaSyIM(const Graph& graph, int iterations) noexcept

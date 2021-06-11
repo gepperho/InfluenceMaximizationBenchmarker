@@ -2,10 +2,10 @@
 
 #include "Graph.hpp"
 #include "solver/SolverInterface.hpp"
-class EaSyIM_Delta final : public SolverInterface
+class EasyImDelta final : public SolverInterface
 {
 public:
-    EaSyIM_Delta(const Graph& graph, int iterations = 3) noexcept;
+    EasyImDelta(const Graph& graph, int iterations = 3) noexcept;
 
     auto solve(std::size_t k) noexcept
         -> std::vector<NodeId> final;

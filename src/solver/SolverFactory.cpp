@@ -1,5 +1,4 @@
-#include <fmt/core.h>
-#include <iostream>
+#include <Benchmarker.hpp>
 #include <solver/CelfGreedy.hpp>
 #include <solver/IMM.hpp>
 #include <solver/IPA.hpp>
@@ -13,14 +12,11 @@
 #include <solver/simple/PageRankSolver.hpp>
 #include <solver/simple/Random.hpp>
 #include <solver/simple/WeightedPageRank.hpp>
-#include <util/Definitions.hpp>
 
 
-auto SolverFactory::create(const std::vector<std::string>& arguments, Graph& graph) noexcept -> std::vector<std::unique_ptr<SolverInterface>>
+auto SolverFactory::benchmarkAll(const std::vector<std::string>& arguments, Graph& graph, Benchmarker& bm) noexcept
+    -> void
 {
-    // create a vector of solvers
-    std::vector<std::unique_ptr<SolverInterface>> solvers;
-
     int argument_count = 0;
     for(std::size_t index{0}; index < arguments.size(); ++index) {
 
@@ -29,91 +25,109 @@ auto SolverFactory::create(const std::vector<std::string>& arguments, Graph& gra
             continue;
         }
 
-        auto solver = arguments[index];
-        std::transform(solver.begin(),
-                       solver.end(),
-                       solver.begin(),
+        auto solver_arg = arguments[index];
+        std::transform(solver_arg.begin(),
+                       solver_arg.end(),
+                       solver_arg.begin(),
                        [](char c) {
                            return ::tolower(c);
                        });
 
-        try {
-            if(solver == "pr") {
-                solvers.emplace_back(std::make_unique<PageRankSolver>(graph));
-
-            } else if(solver == "wpr") {
-                solvers.emplace_back(std::make_unique<WeightedPageRank>(graph));
-
-            } else if(solver == "degree") {
-                solvers.emplace_back(std::make_unique<DegreeDiscountSolver>(graph));
-
-            } else if(solver == "highdegree" or solver == "high_degree") {
-                solvers.emplace_back(std::make_unique<HighDegree>(graph));
-
-            } else if(solver == "random" or solver == "rnd") {
-                solvers.emplace_back(std::make_unique<Random>(graph));
-
-            } else if(solver == "celf" or solver == "celfgreedy") {
-                if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
-                    auto mc_simulations = util::extractParameter<int>(arguments[index + 1]);
-                    argument_count = 1;
-                    solvers.emplace_back(std::make_unique<CelfGreedy>(graph, mc_simulations.value()));
-                } else {
-                    solvers.emplace_back(std::make_unique<CelfGreedy>(graph));
+        auto solver = [&]() -> std::unique_ptr<SolverInterface> {
+            try {
+                if(solver_arg == "pr") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto iterations = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<PageRankSolver>(graph, iterations.value());
+                    }
+                    return std::make_unique<PageRankSolver>(graph);
                 }
 
-            } else if(solver == "wd" or solver == "weighteddegree") {
-                solvers.emplace_back(std::make_unique<WeightedDegree>(graph));
-
-            } else if(solver == "ipa") {
-                if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
-                    auto threshold_divider = util::extractParameter<int>(arguments[index + 1]);
-                    argument_count = 1;
-                    solvers.emplace_back(std::make_unique<IPASolver>(graph, threshold_divider.value()));
-                } else {
-                    solvers.emplace_back(std::make_unique<IPASolver>(graph));
+                if(solver_arg == "wpr") {
+                    return std::make_unique<WeightedPageRank>(graph);
                 }
 
-
-            } else if(solver == "easyim-delta") {
-                if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
-                    auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
-                    argument_count = 1;
-                    solvers.emplace_back(std::make_unique<EaSyIM_Delta>(graph, recursion_depth.value()));
-                } else {
-                    solvers.emplace_back(std::make_unique<EaSyIM_Delta>(graph));
+                if(solver_arg == "degree") {
+                    return std::make_unique<DegreeDiscountSolver>(graph);
                 }
 
-            } else if(solver == "easyim" or solver == "EASYIM" or solver == "EaSyIM") {
-                if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
-                    auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
-                    argument_count = 1;
-                    solvers.emplace_back(std::make_unique<EaSyIM>(graph, recursion_depth.value()));
-                } else {
-                    solvers.emplace_back(std::make_unique<EaSyIM>(graph));
+                if(solver_arg == "highdegree" or solver_arg == "high_degree") {
+                    return std::make_unique<HighDegree>(graph);
                 }
 
-            } else if(solver == "ua" or solver == "UA") {
-                if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
-                    auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
-                    argument_count = 1;
-                    solvers.emplace_back(std::make_unique<UpdateApproximation>(graph, recursion_depth.value()));
-                } else {
-                    solvers.emplace_back(std::make_unique<UpdateApproximation>(graph));
+                if(solver_arg == "random" or solver_arg == "rnd") {
+                    return std::make_unique<Random>(graph);
                 }
 
-            } else if(solver == "imm") {
-                solvers.emplace_back(std::make_unique<IMM>(graph));
+                if(solver_arg == "celf" or solver_arg == "celfgreedy") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto mc_simulations = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<CelfGreedy>(graph, mc_simulations.value());
+                    }
 
-            } else {
-                fmt::print("unknown solver {}\n", solver);
+                    return std::make_unique<CelfGreedy>(graph);
+                }
+
+                if(solver_arg == "wd" or solver_arg == "weighteddegree") {
+                    return std::make_unique<WeightedDegree>(graph);
+                }
+
+                if(solver_arg == "ipa") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto threshold_divider = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<IPASolver>(graph, threshold_divider.value());
+                    }
+                    return std::make_unique<IPASolver>(graph);
+                }
+
+                if(solver_arg == "easyim-delta") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<EasyImDelta>(graph, recursion_depth.value());
+                    }
+                    return std::make_unique<EasyImDelta>(graph);
+                }
+
+                if(solver_arg == "easyim") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<EaSyIM>(graph, recursion_depth.value());
+                    }
+                    return std::make_unique<EaSyIM>(graph);
+                }
+
+                if(solver_arg == "ua") {
+                    if(arguments.size() > index + 1 && util::isNumber(arguments[index + 1])) {
+                        auto recursion_depth = util::extractParameter<int>(arguments[index + 1]);
+                        argument_count = 1;
+                        return std::make_unique<UpdateApproximation>(graph, recursion_depth.value());
+                    }
+                    return std::make_unique<UpdateApproximation>(graph);
+                }
+
+                if(solver_arg == "imm") {
+                    return std::make_unique<IMM>(graph);
+                }
+
+                // "Default" case
+                fmt::print("unknown solver{}\n", solver_arg);
+
+            } catch(const std::invalid_argument& ia) {
+                std::cerr << "Invalid argument: "
+                          << ia.what()
+                          << " for algorithm: "
+                          << solver_arg << '\n';
             }
-        } catch(const std::invalid_argument& ia) {
-            std::cerr << "Invalid argument: "
-                      << ia.what()
-                      << " for algorithm: "
-                      << solver << '\n';
+            return nullptr;
+        }();
+
+        if(solver) {
+            bm.benchmark(solver);
         }
     }
-    return solvers;
 }

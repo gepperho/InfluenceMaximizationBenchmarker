@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <execution>
 #include <iostream>
-#include <numeric>
 #include <solver/simple/WeightedPageRank.hpp>
 
 WeightedPageRank::WeightedPageRank(const Graph& graph) noexcept

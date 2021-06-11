@@ -1,7 +1,6 @@
 #include <dSFMT.h>
 #include <diffusion/LinearThreshold.hpp>
 #include <execution>
-#include <numeric>
 
 using utils::range;
 

@@ -31,7 +31,7 @@ auto parseEvaluatorArguments(int argc, char* argv[])
     bool print_raw = false;
     bool use_inverse = false;
     bool backwards_activation = false;
-    bool skip;
+    bool skip = false;
     ParseMode parse_mode = ParseMode::VERTEX_LIST;
     DiffusionModel diffusion_model = DiffusionModel::INDEPENDENT_CASCADE;
 
@@ -138,9 +138,9 @@ auto main(int argc, char* argv[])
     auto graph = [&] {
         switch(args.parse_mode) {
         case ParseMode::VERTEX_LIST:
-		  return parseVertexListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
+            return parseVertexListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
         case ParseMode::EDGE_LIST:
-		  return parseEdgeListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
+            return parseEdgeListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
         default:
             fmt::print("unknown parse mode\n");
             std::exit(-1);

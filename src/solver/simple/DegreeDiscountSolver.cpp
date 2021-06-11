@@ -11,7 +11,8 @@ auto DegreeDiscountSolver::solve(const std::size_t k) noexcept
 {
     auto nodes = utils::range(graph_.getNumberOfNodes());
 
-    std::vector<NodeId> seeds(k);
+    std::vector<NodeId> seeds;
+    seeds.reserve(k);
 
     std::for_each(std::execution::par,
                   nodes.begin(),

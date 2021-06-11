@@ -1,6 +1,5 @@
 #include <CLI/CLI.hpp>
 #include <IMBProgramOptions.hpp>
-#include <Parser.hpp>
 #include <thread>
 
 IMBProgramOptions::IMBProgramOptions(int reruns,

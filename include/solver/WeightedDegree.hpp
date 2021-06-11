@@ -1,7 +1,7 @@
 #pragma once
 
-#include <solver/SolverInterface.hpp>
 #include <Graph.hpp>
+#include <solver/SolverInterface.hpp>
 
 class WeightedDegree : public SolverInterface
 {
@@ -15,7 +15,7 @@ public:
         -> std::string override;
 
 
-protected:
+private:
     const Graph& graph_;
     std::vector<float> avg_;
 };

@@ -1,32 +1,77 @@
 #include <Parser.hpp>
+#include <cmath>
 #include <fmt/core.h>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 
 namespace {
+
+//extracts and erases the next integer from a string view
+auto extractNextInteger(std::string_view& line) noexcept
+    -> NodeId
+{
+    if(auto remove = line.find_first_of("0123456789");
+       remove != std::string_view::npos) {
+        line.remove_prefix(remove);
+    }
+
+    NodeId node = 0;
+    auto remove_counter = 0;
+
+    // this can be optimized much more
+    for(char digit : line) {
+        if(digit == ':' || digit == ',' || std::isspace(digit)) {
+            break;
+        }
+
+        node *= 10;
+        node += digit - '0';
+        remove_counter++;
+    }
+    line.remove_prefix(remove_counter);
+
+    return node;
+}
 
 auto parseVertexListLine(std::string_view line)
     -> std::tuple<NodeId, std::vector<Edge>>
 {
-    NodeId node;
-    std::string neighbour_list;
-    char separator;
+    NodeId node = extractNextInteger(line);
 
-    std::istringstream iss(line.data());
-    iss >> node >> separator >> neighbour_list;
-
-    // parse neighbours
-    std::stringstream nss(neighbour_list);
-    long neighbour;
     std::vector<Edge> edges;
-    while(nss >> neighbour) {
-        edges.emplace_back(neighbour);
-        if(nss.peek() == ',') {
-            nss.ignore();
+
+    while(!line.empty()) {
+
+        if(auto remove = line.find_first_of("0123456789");
+           remove != std::string_view::npos) {
+            line.remove_prefix(remove);
+        } else {
+            break;
         }
+
+
+        NodeId neighbour = extractNextInteger(line);
+        edges.emplace_back(neighbour, std::numeric_limits<float>::quiet_NaN());
     }
 
     return {node, edges};
+}
+
+auto parseEdgeListLine(std::string_view line)
+    -> std::tuple<NodeId, NodeId, float>
+{
+    NodeId from = extractNextInteger(line);
+    NodeId to = extractNextInteger(line);
+
+    char* end;
+
+    float weight = std::strtof(line.data(), &end);
+
+    if(line.data() == end) {
+        weight = NAN;
+    }
+
+    return std::tuple{from, to, weight};
 }
 
 } // namespace
@@ -45,15 +90,14 @@ auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta
     }
 
     std::string line;
-    bool skip = true;
     bool first = true;
     NodeId expected_node = 0;
     std::size_t missing = 0;
 
     while(std::getline(input_file, line)) {
 
-        if(skip && contains_meta_data) {
-            skip = false;
+        if(contains_meta_data) {
+            contains_meta_data = false;
             continue;
         }
 
@@ -61,8 +105,9 @@ auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta
 
         if(first and node != 0 and should_log) {
             fmt::print("the edgelist file started with node {}, which is strange\n", node);
-            first = false;
         }
+
+        first = false;
 
         if(node != expected_node) {
             missing += node - expected_node;
@@ -78,6 +123,7 @@ auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta
     }
 
     graph.calculateEdgeWeights();
+
     if(missing != 0 and should_log) {
         fmt::print("while parsing the graph, {} nodes were missing\n", missing);
     }
@@ -101,48 +147,20 @@ auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_d
 
     NodeId max{0};
 
-    bool skip = true;
-    bool first = true;
-
-    NodeId last_node = 0;
-    std::size_t missing = 0;
-
     while(std::getline(input_file, line)) {
-        if(line.rfind('#', 0) == 0 || line.rfind('%', 0) == 0) {
+        if(line.rfind('#', 0) == 0
+           or line.rfind('%', 0) == 0
+           or contains_meta_data) {
+            contains_meta_data = false;
             continue;
         }
 
-        if(skip && contains_meta_data) {
-            skip = false;
-            continue;
-        }
+        auto [from, to, weight] = parseEdgeListLine(line);
 
-
-        NodeId from;
-        NodeId to;
-
-        std::istringstream iss(line);
-        iss >> from >> to;
-
-        if(first and from != 0 and should_log) {
-            fmt::print("the edgelist file started with node {}, which is strange\n", from);
-        }
-        first = false;
-
-        adj_list[from].emplace_back(to);
-
-        // TODO fix: not every id appears on the left side (from)
-        if(from > last_node + 1) {
-            missing += from - (last_node + 1);
-        }
-        last_node = from;
+        adj_list[from].emplace_back(to, weight);
 
         max = std::max(max, from);
         max = std::max(max, to);
-    }
-
-    if(missing != 0 and should_log) {
-        fmt::print("while parsing the graph {} nodes were missing\n", missing);
     }
 
     Graph graph{path.data()};
@@ -154,10 +172,25 @@ auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_d
         }
     }
 
+
     graph.calculateBackwardEdges();
     if(inverse) {
         graph.inverse();
     }
     graph.calculateEdgeWeights();
+
+    if(should_log) {
+        auto isolated = std::count_if(std::begin(utils::range(max)),
+                                      std::end(utils::range(max)),
+                                      [&](auto n) {
+                                          return graph.getEdgesOf(n).empty()
+                                              and graph.getInverseEdgesOf(n).empty();
+                                      });
+
+        if(isolated != 0) {
+            fmt::print("graph was build with {} isolated nodes\n", isolated);
+        }
+    }
+
     return graph;
 }

@@ -1,9 +1,7 @@
 #include <execution>
-#include <fmt/core.h>
-#include <numeric>
 #include <solver/iterative/EaSyIM_Delta.hpp>
 
-EaSyIM_Delta::EaSyIM_Delta(const Graph& graph, int iterations) noexcept
+EasyImDelta::EasyImDelta(const Graph& graph, int iterations) noexcept
     : graph_(graph),
       iterations_(iterations),
       weighted_degree_0_(graph_.getNumberOfNodes(), 0.0f),
@@ -11,7 +9,7 @@ EaSyIM_Delta::EaSyIM_Delta(const Graph& graph, int iterations) noexcept
 
 {}
 
-auto EaSyIM_Delta::solve(const std::size_t k) noexcept
+auto EasyImDelta::solve(const std::size_t k) noexcept
     -> std::vector<NodeId>
 {
 
@@ -62,8 +60,8 @@ auto EaSyIM_Delta::solve(const std::size_t k) noexcept
                        end_iter);
 }
 
-auto EaSyIM_Delta::performWeightedDegreeIteration(const std::vector<NodeId>& nodes,
-                                                  const int iteration) noexcept
+auto EasyImDelta::performWeightedDegreeIteration(const std::vector<NodeId>& nodes,
+                                                 const int iteration) noexcept
     -> void
 { // calculate average neighbor success
 
@@ -89,7 +87,7 @@ auto EaSyIM_Delta::performWeightedDegreeIteration(const std::vector<NodeId>& nod
                           });
                   });
 }
-auto EaSyIM_Delta::name() const noexcept
+auto EasyImDelta::name() const noexcept
     -> std::string
 {
     return "EaSyIM-Delta," + std::to_string(iterations_);

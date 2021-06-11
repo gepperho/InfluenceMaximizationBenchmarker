@@ -37,9 +37,5 @@ auto main(int argc, char* argv[])
     srand(dis(gen));
 
     Benchmarker bm{graph, options, reading_time};
-    auto solvers = SolverFactory::create(strategies, graph);
-
-    for(auto& solver : solvers) {
-        bm.benchmark(solver);
-    }
+    SolverFactory::benchmarkAll(strategies, graph, bm);
 }

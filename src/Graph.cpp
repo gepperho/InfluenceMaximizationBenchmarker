@@ -1,17 +1,20 @@
 #include <Graph.hpp>
+#include <cmath>
 
 Graph::Graph(std::string path)
     : graph_name_(std::move(path))
 {
     forward_offset_array_.push_back(0);
     backward_offset_array_.push_back(0);
+
+    dsfmt_init_gen_rand(&dsfmt_, rand());
 }
 
 auto Graph::getEdgesOf(NodeId node) const
     -> nonstd::span<const Edge>
 {
     auto start_offset = forward_offset_array_[node];
-    auto end_offset = forward_offset_array_.at(static_cast<unsigned long>(node + 1));
+    auto end_offset = forward_offset_array_[node + 1];
     const auto* start = &forward_edges_[start_offset];
     const auto* end = &forward_edges_[end_offset];
 
@@ -22,7 +25,7 @@ auto Graph::getInverseEdgesOf(NodeId node) const
     -> nonstd::span<const Edge>
 {
     auto start_offset = backward_offset_array_[node];
-    auto end_offset = backward_offset_array_.at(static_cast<unsigned long>(node + 1));
+    auto end_offset = backward_offset_array_[node + 1];
     const auto* start = &backward_edges_[start_offset];
     const auto* end = &backward_edges_[end_offset];
 
@@ -53,7 +56,8 @@ auto Graph::getNumberOfEdges() const
     return forward_edges_.size();
 }
 
-auto Graph::getGraphName() const -> std::string_view
+auto Graph::getGraphName() const
+    -> std::string_view
 {
     return graph_name_;
 }
@@ -74,7 +78,7 @@ auto Graph::calculateBackwardEdges()
 {
     auto number_of_nodes = getNumberOfNodes();
 
-    std::vector<std::vector<Edge>> adjacency_list(static_cast<unsigned long>(number_of_nodes));
+    std::vector<std::vector<Edge>> adjacency_list(number_of_nodes);
 
     // calculate the back-edge adjacency list
     for(NodeId from{0}; from < number_of_nodes; from++) {
@@ -124,7 +128,9 @@ auto Graph::calculateEdgeWeights() -> void
     // todo implement different diffusion probabilities
     // iterate edges for the forward edge list
     for(auto& edge : forward_edges_) {
-        edge.setWeight(1.0f / getInDegreeOf(edge.getDestination()));
+        if(std::isnan(edge.getWeight())) {
+            edge.setWeight(1.0f / getInDegreeOf(edge.getDestination()));
+        }
     }
 
     // iterate nodes and insert their weight into their backwards edges
@@ -137,4 +143,12 @@ auto Graph::calculateEdgeWeights() -> void
             backward_edges_[edge_pointer].setWeight(weight);
         }
     }
+}
+
+
+auto Graph::getRandomNode() const noexcept
+    -> NodeId
+{
+    const auto size = getNumberOfNodes();
+    return dsfmt_genrand_uint32_range(&dsfmt_, size);
 }

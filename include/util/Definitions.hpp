@@ -52,6 +52,7 @@ auto extractParameter(std::string_view s) noexcept
     } catch(...) {
         return std::nullopt;
     }
+    return std::nullopt;
 }
 
 } // namespace util

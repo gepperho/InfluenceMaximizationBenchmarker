@@ -1,10 +1,7 @@
 #include <Benchmarker.hpp>
-#include <Timer.h>
-#include <dSFMT.h>
 #include <execution>
 #include <mutex>
 #include <solver/IMM.hpp>
-#include <vector>
 
 IMM::IMM(const Graph& graph) noexcept
     : graph_(graph) {}
@@ -18,17 +15,17 @@ auto IMM::solve(const std::size_t k) noexcept
     const double e = std::exp(1.);
 
     // Estimating Constants
-    const auto n = static_cast<double>(graph_.getNumberOfNodes());
-    const double l = 1.; //(1. + std::log(2) / std::log(n));
-    const double epsilon_a = std::sqrt(2) * epsilon;
-    const double log_binom = logBinom(n, k);
-    const double log_n = std::log(n);
-    const double log_2n = std::log2(n);
-    const double log_2 = std::log(2);
-    const double alpha = std::sqrt(l * log_n + log_2); // eq 5
-    const double beta = std::sqrt((1 - 1 / e) * (log_binom + l * log_n + log_2)); // eq 5
-    const double lambda_star = 2.0 * n * std::pow(((1.0 - 1.0 / e) * alpha + beta), 2) / (epsilon * epsilon); // eq 6
-    const double lambda_a = (2.0 + 2.0 / 3.0 * epsilon_a)
+    const auto n = graph_.getNumberOfNodes();
+    const auto l = 1.; //(1. + std::log(2) / std::log(n));
+    const auto epsilon_a = std::sqrt(2) * epsilon;
+    const auto log_binom = logBinom(n, k);
+    const auto log_n = std::log(n);
+    const auto log_2n = std::log2(n);
+    const auto log_2 = std::log(2);
+    const auto alpha = std::sqrt(l * log_n + log_2); // eq 5
+    const auto beta = std::sqrt((1 - 1 / e) * (log_binom + l * log_n + log_2)); // eq 5
+    const auto lambda_star = 2. * n * std::pow(((1. - 1. / e) * alpha + beta), 2) / (epsilon * epsilon); // eq 6
+    const auto lambda_a = (2. + 2. / 3. * epsilon_a)
         * (log_binom + l * log_n + std::log(log_2n))
         * n / (epsilon_a * epsilon_a); // eq 9
 
@@ -36,7 +33,7 @@ auto IMM::solve(const std::size_t k) noexcept
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, rand());
 
-    std::size_t lower_bound = 1;
+    auto lower_bound = 1;
     double x;
     double theta_i;
     std::mutex mtx;
@@ -51,7 +48,7 @@ auto IMM::solve(const std::size_t k) noexcept
         x = n / (std::pow(2., i));
         theta_i = lambda_a / x;
         rr_sets_.reserve(theta_i + rr_batch_size);
-        std::int64_t size = rr_sets_.size();
+        auto size = rr_sets_.size();
         auto range = utils::range(size, size + 1 + (static_cast<std::int64_t>(theta_i) - size) / rr_batch_size);
 
         //could be flatted to only one loop i guess
@@ -62,7 +59,7 @@ auto IMM::solve(const std::size_t k) noexcept
             [&](auto /*y*/) {
                 std::vector<std::vector<NodeId>> temp;
                 temp.reserve(rr_batch_size);
-                for(int i = 0; i < rr_batch_size; ++i) {
+                for(int j = 0; j < rr_batch_size; ++j) {
                     temp.emplace_back(createRrSet(dsfmt));
                 }
                 std::lock_guard lock{mtx};
@@ -81,14 +78,13 @@ auto IMM::solve(const std::size_t k) noexcept
     //fmt::print("Step 1 RR-sets: {}\n", rr_sets_.size());
 
     // create more rr sets, if necessary
-    const double theta = lambda_star / lower_bound;
-    const long size = rr_sets_.size();
+    const auto theta = lambda_star / lower_bound;
+    const auto size = rr_sets_.size();
     if(rr_sets_.size() < theta) {
         rr_sets_.reserve(theta + rr_batch_size);
         rr_sets_changed = true;
         auto range = utils::range(size, size + 1 + (static_cast<std::int64_t>(theta) - size) / rr_batch_size);
 
-        // probably could be flatted to only one loop
         std::for_each(
             std::execution::par,
             std::begin(range),
@@ -106,14 +102,13 @@ auto IMM::solve(const std::size_t k) noexcept
                                 std::end(temp));
             });
     }
-    //fmt::print("Step 2 RR-sets: {}\n", rr_sets_.size());
+    fmt::print("Step 2 RR-sets: {}\n", rr_sets_.size());
 
     // greedily select the k best nodes
     if(rr_sets_changed) {
         std::tie(result_set, f_r) = nodeSelection(k);
     }
 
-    //fmt::print("[DEBUG] rr_size: {}\n", rr_sets_.size());
     return result_set;
 }
 
@@ -129,7 +124,7 @@ auto IMM::createRrSet(dsfmt_t dsfmt) const noexcept
     //should be member
     std::vector visited(graph_.getNumberOfNodes(), false);
 
-    const auto source_node = getRandomNode();
+    const auto source_node = graph_.getRandomNode();
     std::vector<NodeId> rr_set;
 
     //this is named queue but is actually used as a stack
@@ -157,25 +152,16 @@ auto IMM::createRrSet(dsfmt_t dsfmt) const noexcept
     return rr_set;
 }
 
-auto IMM::getRandomNode() const noexcept
-    -> NodeId
-{
-    static std::random_device rd;
-    static std::mt19937 mt(rd());
-    std::uniform_int_distribution<std::size_t> dist(0, graph_.getNumberOfNodes() - 1);
-
-    return dist(mt);
-}
 
 //This seems to be used in multiple solvers it could be moved out as a util function
-auto IMM::logBinom(const std::int64_t n, const std::size_t k) const noexcept
+auto IMM::logBinom(const std::size_t n, const std::size_t k) const noexcept
     -> double
 {
     double ans = 0;
-    for(std::int64_t i = n - k + 1; i <= n; i++) {
+    for(auto i = n - k + 1; i <= n; i++) {
         ans += log(i);
     }
-    for(std::size_t i = 1; i <= k; i++) {
+    for(auto i = 1; i <= k; i++) {
         ans -= log(i);
     }
     return ans;

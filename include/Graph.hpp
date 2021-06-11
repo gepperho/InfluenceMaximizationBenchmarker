@@ -2,6 +2,7 @@
 
 #include <Edge.hpp>
 #include <cstdint>
+#include <dSFMT.h>
 #include <nonstd/span.hpp>
 #include <util/Range.hpp>
 #include <vector>
@@ -47,11 +48,14 @@ public:
 
     auto calculateEdgeWeights() -> void;
 
+    auto getRandomNode() const noexcept
+        -> NodeId;
+
 private:
-  friend auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+    friend auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
         -> Graph;
 
-  friend auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+    friend auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
         -> Graph;
 
     /**
@@ -75,6 +79,8 @@ private:
     auto calculateBackwardEdges()
         -> void;
 
+
+    mutable dsfmt_t dsfmt_;
     std::vector<std::size_t> forward_offset_array_;
     std::vector<std::size_t> backward_offset_array_;
     std::vector<Edge> forward_edges_;

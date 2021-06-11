@@ -3,6 +3,11 @@
 Edge::Edge(NodeId destination)
     : destination_(destination) {}
 
+Edge::Edge(NodeId destination,
+           float weight)
+    : destination_(destination),
+      weight_(weight) {}
+
 
 auto Edge::getDestination() const
     -> NodeId

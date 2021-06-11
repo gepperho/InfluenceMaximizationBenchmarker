@@ -1,6 +1,5 @@
 #include <dSFMT.h>
 #include <execution>
-#include <fmt/core.h>
 #include <queue>
 #include <random>
 #include <solver/CelfGreedy.hpp>

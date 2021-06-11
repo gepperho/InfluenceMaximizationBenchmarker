@@ -28,17 +28,11 @@ private:
     auto createRrSet(dsfmt_t dsfmt) const noexcept
         -> std::vector<NodeId>;
 
-    /**
-     * returns a random node id within range [0, |V|)
-     * @return random node id
-     */
-    auto getRandomNode() const noexcept
-        -> NodeId;
 
     /**
     * calculates the log2(binomial coefficient(n.k))
     */
-    auto logBinom(std::int64_t n, std::size_t k) const noexcept
+    auto logBinom(std::size_t n, std::size_t k) const noexcept
         -> double;
 
     /**

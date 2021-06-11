@@ -1,6 +1,5 @@
 #include "solver/WeightedDegree.hpp"
 #include <execution>
-#include <numeric>
 
 WeightedDegree::WeightedDegree(const Graph& graph) noexcept
     : graph_(graph),

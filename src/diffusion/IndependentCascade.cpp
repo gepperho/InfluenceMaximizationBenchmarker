@@ -1,8 +1,6 @@
 #include <Graph.hpp>
-#include <dSFMT.h>
 #include <diffusion/IndependentCascade.hpp>
 #include <execution>
-#include <fmt/core.h>
 
 using utils::range;
 

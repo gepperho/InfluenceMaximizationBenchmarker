@@ -12,6 +12,8 @@ class PageRankSolver final : public SolverInterface
 public:
     PageRankSolver(const Graph& graph) noexcept;
 
+    PageRankSolver(const Graph& graph, int iterations) noexcept;
+
     auto solve(std::size_t k) noexcept
         -> std::vector<NodeId> final;
 
@@ -20,15 +22,23 @@ public:
 
 private:
     /**
-     * runs 'iterations' number of page rank calculations, using the power method
-     * @param in_edge
+     * runs a single page rank iteration
      */
-    auto pageRankIteration(int iterations) noexcept
+    auto pageRankIteration() noexcept
         -> void;
 
     auto getKMaxNodes(std::size_t k) const noexcept
         -> std::vector<NodeId>;
 
+    /**
+     * runs pageRankIteration until the delta is smaller than 0.001
+     */
+    auto pageRankConverge() noexcept
+        -> void;
+
+
     const Graph& graph_;
     std::vector<float> page_rank_;
+    std::vector<float> temp_rank_;
+    int iterations_ = 0;
 };
