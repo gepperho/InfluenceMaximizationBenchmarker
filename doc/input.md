@@ -10,7 +10,7 @@ However, when using edge lists custom weights can be given.
 
 In the following we use this sample graph:
 
-<img src="doc/example_graph.png" alt="example graph" width="352" height="170">
+<img src="example_graph.png" alt="example graph" width="352" height="170">
 
 ## Vertex List
 Vertex list files should have the following structure, with one vertex per line.
