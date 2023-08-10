@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Graph.hpp>
+#include <fmt/core.h>
 #include <unordered_set>
 namespace util {
 
@@ -11,7 +12,11 @@ enum class DiffusionModel : std::size_t {
     LINEAR_THRESHOLD = 1
 };
 
-static auto diffusionModelToString(DiffusionModel m) -> std::string
+inline auto diffusionModelToString(DiffusionModel m)
+    //we can return an non owing string view here instead of an owing std::string
+    //this is the case because the returned expressions are string literals which have static storrage duration
+    //to read more about storrage duration have a look here: https://en.cppreference.com/w/cpp/language/storage_duration
+    -> std::string_view
 {
     switch(m) {
     case DiffusionModel::INDEPENDENT_CASCADE:
@@ -19,12 +24,12 @@ static auto diffusionModelToString(DiffusionModel m) -> std::string
     case DiffusionModel::LINEAR_THRESHOLD:
         return "Linear Threshold";
     default:
-        // unknown type -> undefined behaviour
-        exit(-1);
+        fmt::print("somehow an object of type DiffusionModel had a value which was not 0 or 1...\exiting...\n");
+        std::exit(-1);
     }
 }
 
-static auto isNumber(const std::string& s) -> bool
+inline auto isNumber(const std::string& s) -> bool
 {
     return std::all_of(std::begin(s),
                        std::end(s),
@@ -46,6 +51,7 @@ auto extractParameter(std::string_view s) noexcept
         } else if constexpr(std::is_same_v<T, float>) {
             return std::stof(s.data());
         } else {
+            //this fails at compiletime if T is a type we dont know how to extract
             static_assert("you are trying to extract an unknown parameter type");
         }
 

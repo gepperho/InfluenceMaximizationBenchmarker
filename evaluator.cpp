@@ -1,3 +1,6 @@
+//this avoids all the warnings from dSFMT
+#define DSFMT_MEXP 19937
+
 #include <Benchmarker.hpp>
 #include <CLI/CLI.hpp>
 #include <tbb/tbb.h>
@@ -16,6 +19,7 @@ struct arguments
     bool raw_output; // TODO implement a non raw output
     bool inverse_graph;
     bool backwards_diffusion;
+    bool random_edge_weights;
 };
 
 auto parseEvaluatorArguments(int argc, char* argv[])
@@ -32,6 +36,7 @@ auto parseEvaluatorArguments(int argc, char* argv[])
     bool use_inverse = false;
     bool backwards_activation = false;
     bool skip = false;
+    bool random_edge_weights = false;
     ParseMode parse_mode = ParseMode::VERTEX_LIST;
     DiffusionModel diffusion_model = DiffusionModel::INDEPENDENT_CASCADE;
 
@@ -76,6 +81,10 @@ auto parseEvaluatorArguments(int argc, char* argv[])
                  print_raw,
                  "if set, the results will be printed non pretty and not formatted");
 
+    app.add_flag("-e,--random-edge-weights",
+                 random_edge_weights,
+                 "if set every the weight of every edge will be one of {0.1, 0.01, 0.001} choosen randomly at the beginning");
+
     app.add_flag("-i, --inverse",
                  use_inverse,
                  "if set, the inverse of the graph will be used");
@@ -101,7 +110,7 @@ auto parseEvaluatorArguments(int argc, char* argv[])
         print_raw,
         use_inverse,
         backwards_activation,
-    };
+        random_edge_weights};
 }
 
 auto read_seed_set(const std::string& seed_path) -> std::vector<NodeId>
@@ -138,9 +147,17 @@ auto main(int argc, char* argv[])
     auto graph = [&] {
         switch(args.parse_mode) {
         case ParseMode::VERTEX_LIST:
-            return parseVertexListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
+            return parseVertexListFile(args.graph_file_path,
+                                       args.inverse_graph,
+                                       args.skip_line,
+                                       args.random_edge_weights,
+                                       !args.raw_output);
         case ParseMode::EDGE_LIST:
-            return parseEdgeListFile(args.graph_file_path, args.inverse_graph, args.skip_line, !args.raw_output);
+            return parseEdgeListFile(args.graph_file_path,
+                                     args.inverse_graph,
+                                     args.skip_line,
+                                     args.random_edge_weights,
+                                     !args.raw_output);
         default:
             fmt::print("unknown parse mode\n");
             std::exit(-1);

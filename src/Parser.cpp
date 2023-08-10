@@ -77,7 +77,11 @@ auto parseEdgeListLine(std::string_view line)
 } // namespace
 
 
-auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+auto parseVertexListFile(std::string_view path,
+                         bool inverse,
+                         bool contains_meta_data,
+                         bool random_edge_weights,
+                         bool should_log)
     -> Graph
 {
     Graph graph{path.data()};
@@ -117,12 +121,19 @@ auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta
         graph.appendNode(node, edges);
     }
 
+    if(random_edge_weights) {
+        graph.assignRandomForwardEdgeWeights();
+    }
+
     graph.calculateBackwardEdges();
     if(inverse) {
         graph.inverse();
     }
 
-    graph.calculateEdgeWeights();
+    if(!random_edge_weights) {
+        graph.calculateEdgeWeights();
+    }
+
 
     if(missing != 0 and should_log) {
         fmt::print("while parsing the graph, {} nodes were missing\n", missing);
@@ -131,7 +142,11 @@ auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta
     return graph;
 }
 
-auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+auto parseEdgeListFile(std::string_view path,
+                       bool inverse,
+                       bool contains_meta_data,
+                       bool random_edge_weights,
+                       bool should_log)
     -> Graph
 {
     std::unordered_map<NodeId, std::vector<Edge>> adj_list;
@@ -173,11 +188,18 @@ auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_d
     }
 
 
+    if(random_edge_weights) {
+        graph.assignRandomForwardEdgeWeights();
+    }
+
     graph.calculateBackwardEdges();
     if(inverse) {
         graph.inverse();
     }
-    graph.calculateEdgeWeights();
+
+    if(!random_edge_weights) {
+        graph.calculateEdgeWeights();
+    }
 
     if(should_log) {
         auto isolated = std::count_if(std::begin(utils::range(max)),

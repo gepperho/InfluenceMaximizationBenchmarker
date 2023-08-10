@@ -90,3 +90,6 @@ minimal example with 6 nodes (same as above), with arbitrary weights:
 4 2 0.05567
 4 5 0.25
 ```
+
+### Random Edge Weights
+To get edge weights randomly choosen from `{0.1, 0.01, 0.001}` pass the `-e` or `--random-edge-weights` flag.

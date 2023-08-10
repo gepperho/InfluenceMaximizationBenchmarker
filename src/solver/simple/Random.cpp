@@ -1,5 +1,6 @@
 #include "solver/simple/Random.hpp"
 #include <random>
+#include <algorithm>
 
 Random::Random(const Graph& graph) noexcept
     : graph_(graph)

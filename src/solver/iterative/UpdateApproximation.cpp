@@ -1,6 +1,5 @@
 #include "solver/iterative/UpdateApproximation.hpp"
 #include <execution>
-#include <numeric>
 #include <queue>
 
 UpdateApproximation::UpdateApproximation(const Graph& graph, int iterations) noexcept
@@ -8,8 +7,7 @@ UpdateApproximation::UpdateApproximation(const Graph& graph, int iterations) noe
       iterations_(iterations),
       weighted_degree_even_(graph.getNumberOfNodes(), 0.0f),
       weighted_degree_odd_(graph.getNumberOfNodes(), 0.0f),
-      weighted_degree_0_(graph.getNumberOfNodes(), 0.0f),
-      updated_()
+      weighted_degree_0_(graph.getNumberOfNodes(), 0.0f)
 {}
 
 auto UpdateApproximation::solve(const std::size_t k) noexcept

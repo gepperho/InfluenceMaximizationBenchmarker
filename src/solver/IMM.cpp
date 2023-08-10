@@ -102,7 +102,7 @@ auto IMM::solve(const std::size_t k) noexcept
                                 std::end(temp));
             });
     }
-    fmt::print("Step 2 RR-sets: {}\n", rr_sets_.size());
+    //fmt::print("Step 2 RR-sets: {}\n", rr_sets_.size());
 
     // greedily select the k best nodes
     if(rr_sets_changed) {

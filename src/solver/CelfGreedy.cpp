@@ -7,7 +7,7 @@
 
 CelfGreedy::CelfGreedy(const Graph& graph, const int simulations) noexcept
     : graph_(graph),
-      spread_(graph.getNumberOfNodes()),
+      spread_delta_(graph.getNumberOfNodes()),
       simulations_(simulations)
 {}
 auto CelfGreedy::solve(std::size_t k) noexcept
@@ -18,52 +18,57 @@ auto CelfGreedy::solve(std::size_t k) noexcept
               std::end(nodes),
               0);
     std::vector<NodeId> seed_set;
+    double seed_set_spread = 0;
 
     std::for_each(std::execution::seq,
                   nodes.begin(),
                   nodes.end(),
                   [&](auto node) {
-                      spread_[node] = evaluateSpread(node);
+                      spread_delta_[node] = evaluateSpread(node, seed_set);
                   });
-    std::unordered_set<NodeId> updated;
+    std::unordered_map<NodeId, double> updated_with_total_spread;
     auto seed_comparison =
         [&](const auto& lhs, const auto& rhs) {
-            if(spread_[lhs] == spread_[rhs]) {
-                return updated.find(rhs) != updated.end();
+            if(spread_delta_[lhs] == spread_delta_[rhs]) {
+                return updated_with_total_spread.find(rhs) != updated_with_total_spread.end();
             }
-            return spread_[lhs] < spread_[rhs];
+            return spread_delta_[lhs] < spread_delta_[rhs];
         };
 
     using SeedPriorityQueue = std::priority_queue<NodeId,
                                                   std::vector<NodeId>,
                                                   decltype(seed_comparison)>;
-    SeedPriorityQueue pq(seed_comparison, nodes);
+    SeedPriorityQueue priority_queue(seed_comparison, nodes);
 
     // greedy picking
-    auto initial_top_node = pq.top();
-    pq.pop();
+    auto initial_top_node = priority_queue.top();
+    priority_queue.pop();
     seed_set.reserve(k);
     seed_set.emplace_back(initial_top_node);
 
     while(seed_set.size() < k) {
-        auto top_node = pq.top();
-        pq.pop();
+        auto top_node = priority_queue.top();
+        priority_queue.pop();
 
-        if(updated.find(top_node) != updated.end()) {
-            // current top node is up to date and thus can be added
+        if(updated_with_total_spread.find(top_node) != updated_with_total_spread.end()) {
+            // current top node is up-to-date and thus can be added
+            seed_set_spread = updated_with_total_spread.at(top_node);
             seed_set.emplace_back(top_node);
-            updated.clear();
+            updated_with_total_spread.clear();
             continue;
         }
         // current top node is outdated
-        spread_[top_node] = evaluateSpread(top_node);
+        auto spread = evaluateSpread(top_node, seed_set);
+        spread_delta_[top_node] = spread - seed_set_spread;
 
-        if(spread_[top_node] >= spread_[pq.top()]) {
+        if(spread_delta_[top_node] >= spread_delta_[priority_queue.top()]) {
             // add top_node
+            seed_set_spread = spread;
             seed_set.emplace_back(top_node);
+            updated_with_total_spread.clear();
         } else {
-            updated.insert(top_node);
-            pq.push(top_node);
+            updated_with_total_spread[top_node] = spread;
+            priority_queue.push(top_node);
         }
     }
 
@@ -75,7 +80,7 @@ auto CelfGreedy::name() const noexcept
 {
     return "CELF-Greedy," + std::to_string(simulations_);
 }
-auto CelfGreedy::evaluateSpread(NodeId node) const noexcept
+auto CelfGreedy::evaluateSpread(NodeId node, std::vector<NodeId>& seed_set) const noexcept
     -> double
 {
     return std::transform_reduce(
@@ -87,20 +92,23 @@ auto CelfGreedy::evaluateSpread(NodeId node) const noexcept
             return acc + current;
         },
         [&](auto /*node*/) {
-            return static_cast<double>(singleSimulation(node))
+            return static_cast<double>(singleSimulation(node, seed_set))
                 / static_cast<double>(simulations_);
         });
 }
-auto CelfGreedy::singleSimulation(NodeId node) const noexcept
+auto CelfGreedy::singleSimulation(NodeId node, std::vector<NodeId>& seed_set) const noexcept
     -> long
 {
     std::vector activated(graph_.getNumberOfNodes(), false);
-    std::vector<NodeId> seeds;
+    for(const auto seed_node : seed_set) {
+        activated[seed_node] = true;
+    }
+    activated[node] = true;
 
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, rand());
 
-    std::vector<NodeId> work_queue;
+    std::vector<NodeId> work_queue = seed_set;
     work_queue.emplace_back(node);
 
     while(!work_queue.empty()) {

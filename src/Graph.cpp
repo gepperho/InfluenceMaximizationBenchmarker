@@ -85,7 +85,8 @@ auto Graph::calculateBackwardEdges()
         auto edges = getEdgesOf(from);
         for(auto e : edges) {
             auto to = e.getDestination();
-            Edge back_e{from};
+            auto weight = e.getWeight();
+            Edge back_e{from, weight};
             adjacency_list[to].push_back(back_e);
         }
     }
@@ -129,18 +130,52 @@ auto Graph::calculateEdgeWeights() -> void
     // iterate edges for the forward edge list
     for(auto& edge : forward_edges_) {
         if(std::isnan(edge.getWeight())) {
-            edge.setWeight(1.0f / getInDegreeOf(edge.getDestination()));
+            edge.setWeight(1.0f / static_cast<float>(getInDegreeOf(edge.getDestination())));
         }
     }
 
     // iterate nodes and insert their weight into their backwards edges
     // size -1 because the offset array needs an additional "end element"
     for(NodeId current_node = 0; current_node < static_cast<NodeId>(backward_offset_array_.size() - 1); ++current_node) {
-        auto weight = 1.0f / getInDegreeOf(current_node);
+        auto weight = 1.0f / static_cast<float>(getInDegreeOf(current_node));
         auto edge_pointer = backward_offset_array_[current_node];
         auto edge_end = backward_offset_array_[current_node + 1];
         for(; edge_pointer < edge_end; ++edge_pointer) {
             backward_edges_[edge_pointer].setWeight(weight);
+        }
+    }
+}
+
+auto Graph::assignRandomForwardEdgeWeights()
+    -> void
+{
+    //set forward edge weights
+    for(auto& edge : forward_edges_) {
+        auto rand = dsfmt_genrand_close_open(&dsfmt_);
+
+        if(rand < 0.333333) {
+            edge.setWeight(0.1f);
+        } else if(rand < 0.666666) {
+            edge.setWeight(0.01f);
+        } else {
+            edge.setWeight(0.001f);
+        }
+    }
+}
+
+auto Graph::assignRandomBackwardEdgeWeights()
+    -> void
+{
+    //set forward edge weights
+    for(auto& edge : backward_edges_) {
+        auto rand = dsfmt_genrand_close_open(&dsfmt_);
+
+        if(rand < 0.333333) {
+            edge.setWeight(0.1f);
+        } else if(rand < 0.666666) {
+            edge.setWeight(0.01f);
+        } else {
+            edge.setWeight(0.001f);
         }
     }
 }

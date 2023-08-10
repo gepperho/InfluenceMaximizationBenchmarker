@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Parser.hpp"
+#include <Parser.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -21,6 +21,7 @@ public:
                       std::string path,
                       bool use_inverse_graph,
                       bool backwards_activation,
+                      bool random_edge_weights,
                       std::optional<std::string> out_path,
                       std::vector<std::string> solver);
     IMBProgramOptions() = delete;
@@ -63,6 +64,9 @@ public:
     auto shouldPerformBackwardsActivation() const
         -> bool;
 
+    auto shouldUseRandomEdgeWeights() const
+        -> bool;
+
     auto getDiffusionModel() const
         -> DiffusionModel;
 
@@ -76,6 +80,7 @@ private:
     std::string graph_path_;
     bool use_inverse_graph_;
     bool backwards_activation_;
+    bool random_edge_weights_;
     std::optional<std::string> out_path_;
     std::vector<std::string> solver_;
 };

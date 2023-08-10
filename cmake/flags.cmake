@@ -42,6 +42,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}\
           -pipe\
           -Wall\
+          -fipa-pta\
+          -fdevirtualize-at-ltrans\
           -flto\
           -O3\
           -march=native")

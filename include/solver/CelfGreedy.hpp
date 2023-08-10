@@ -7,7 +7,7 @@
 class CelfGreedy : public SolverInterface
 {
 public:
-    CelfGreedy(const Graph& graph, int simulations = 10000) noexcept;
+    CelfGreedy(const Graph &graph, int simulations = 10000) noexcept;
 
     auto solve(std::size_t k) noexcept
         -> std::vector<NodeId> final;
@@ -16,14 +16,14 @@ public:
         -> std::string final;
 
 private:
-    auto evaluateSpread(NodeId node) const noexcept
+    auto evaluateSpread(NodeId node, std::vector<NodeId> &seed_set) const noexcept
         -> double;
 
-    auto singleSimulation(NodeId node) const noexcept
+    auto singleSimulation(NodeId node, std::vector<NodeId> &seed_set) const noexcept
         -> long;
 
-    const Graph& graph_;
-    std::vector<double> spread_;
+    const Graph &graph_;
+    std::vector<double> spread_delta_;
 
     const int simulations_;
 };

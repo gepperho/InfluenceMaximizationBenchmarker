@@ -11,6 +11,7 @@ IMBProgramOptions::IMBProgramOptions(int reruns,
                                      std::string path,
                                      bool use_inverse_graph,
                                      bool backwards_activation,
+                                     bool random_edge_weights,
                                      std::optional<std::string> out_path,
                                      std::vector<std::string> solver)
     : reruns_(static_cast<size_t>(reruns)),
@@ -22,6 +23,7 @@ IMBProgramOptions::IMBProgramOptions(int reruns,
       graph_path_(std::move(path)),
       use_inverse_graph_(use_inverse_graph),
       backwards_activation_(backwards_activation),
+      random_edge_weights_(random_edge_weights),
       out_path_(std::move(out_path)),
       solver_(std::move(solver))
 {}
@@ -82,6 +84,12 @@ auto IMBProgramOptions::shouldUseInverseGraph() const
     return use_inverse_graph_;
 }
 
+auto IMBProgramOptions::shouldUseRandomEdgeWeights() const
+    -> bool
+{
+    return random_edge_weights_;
+}
+
 auto IMBProgramOptions::shouldPerformBackwardsActivation()
     const -> bool
 {
@@ -103,6 +111,7 @@ auto parseArguments(int argc, char* argv[])
     int seeds = 50;
     int reruns = 20000;
     bool print_raw = false;
+    bool random_edge_weights = false;
     bool use_inverse = false;
     bool backwards_activation = false;
     ParseMode parse_mode = ParseMode::VERTEX_LIST;
@@ -127,7 +136,6 @@ auto parseArguments(int argc, char* argv[])
     app.add_option("-o,--output",
                    out_path,
                    "output file to which the seed nodes will be written");
-
 
     app.add_option("-s,--simulations",
                    reruns,
@@ -165,9 +173,14 @@ auto parseArguments(int argc, char* argv[])
                  print_raw,
                  "if set, the results will be printed non pretty and not formatted");
 
+    app.add_flag("-e,--random-edge-weights",
+                 random_edge_weights,
+                 "if set, the weight of every edge will be one of {0.1, 0.01, 0.001} choosen randomly at the beginning");
+
     app.add_flag("-i, --inverse",
                  use_inverse,
                  "if set, the inverse of the graph will be used");
+
     app.add_flag("-b , --backwards-activation",
                  backwards_activation,
                  "if set, the influence propagation will also be calculated in backwards direction");
@@ -187,6 +200,7 @@ auto parseArguments(int argc, char* argv[])
                              std::move(path),
                              use_inverse,
                              backwards_activation,
+                             random_edge_weights,
                              std::move(out_path),
                              std::move(solvers)};
 }

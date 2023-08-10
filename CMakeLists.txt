@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.24)
 #get options and compiling env
 include(cmake/options.cmake)
 include(cmake/linker.cmake)
@@ -7,8 +7,8 @@ include(cmake/ccache.cmake)
 project(InfluenceMaximizationBenchmarker)
 project(InfluenceMaximizationBenchmarker LANGUAGES CXX)
 
-#set C++ standard to C++17
-set(CMAKE_CXX_STANDARD 17)
+#set C++ standard to C++20
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -19,7 +19,6 @@ include(cmake/fmt.cmake)
 include(cmake/tbb.cmake)
 include(cmake/span.cmake)
 include(cmake/CLI11.cmake)
-include(cmake/gtest.cmake)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -170,8 +169,3 @@ target_link_libraries(InfluenceMaximizationEvaluator LINK_PUBLIC
 # add the dependencies of the target to enforce
 # the right order of compiling
 add_dependencies(InfluenceMaximizationEvaluator InfluenceMaximizationBenchmarkerSrc)
-
-if (BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(test)
-endif (BUILD_TESTS)

@@ -52,10 +52,18 @@ public:
         -> NodeId;
 
 private:
-    friend auto parseVertexListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+    friend auto parseVertexListFile(std::string_view path,
+                                    bool inverse,
+                                    bool contains_meta_data,
+                                    bool random_edge_weights,
+                                    bool should_log)
         -> Graph;
 
-    friend auto parseEdgeListFile(std::string_view path, bool inverse, bool contains_meta_data, bool should_log)
+    friend auto parseEdgeListFile(std::string_view path,
+                                  bool inverse,
+                                  bool contains_meta_data,
+                                  bool random_edge_weights,
+                                  bool should_log)
         -> Graph;
 
     /**
@@ -77,6 +85,12 @@ private:
 	 * have the backward edges available
 	 */
     auto calculateBackwardEdges()
+        -> void;
+
+    auto assignRandomForwardEdgeWeights()
+        -> void;
+
+    auto assignRandomBackwardEdgeWeights()
         -> void;
 
 

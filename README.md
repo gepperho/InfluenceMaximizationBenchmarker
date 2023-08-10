@@ -13,8 +13,8 @@ IMB provides easy to use implementation of the Influence Maximization (IM) probl
 
 ### Dependencies
 
-*  cmake (3.14 or higher)
-*  clang (version?) or GCC (9.2 or higher)
+*  cmake (3.24 or higher)
+*  clang (version?) or GCC (11.1 or higher)
 
 ### How to build
 
@@ -43,6 +43,7 @@ Running Degree Discount and Update Approximation (UA) with a hop distance of 3 o
 |-a | --algorithm | string | algorithms to be used. Multiple possible (comma separated). See table below for possible options.|
 |-r | --raw | None | Flag to produce non pretty (raw) outputs. Great for machine parsing. |
 |-i | --inverse | None | Flag, if set, the edge directions will be inversed. |
+|-e | --random-edge-weights | None | Flag, if set every the weight of every edge will be one of {0.1, 0.01, 0.001} choosen randomly at the beginning. |
 
 #### Algorithms
 | original name | parameter name | arguments | 

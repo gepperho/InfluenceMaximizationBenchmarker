@@ -1,3 +1,6 @@
+//this avoids all the warnings from dSFMT
+#define DSFMT_MEXP 19937
+
 #include <Benchmarker.hpp>
 #include <random>
 #include <solver/SolverFactory.hpp>
@@ -11,6 +14,7 @@ auto main(int argc, char* argv[])
     auto number_of_threads = options.getNumberOfThreads();
     auto parse_mode = options.getParseMode();
     auto use_inverse = options.shouldUseInverseGraph();
+    auto random_edge_weights = options.shouldUseRandomEdgeWeights();
     const auto& strategies = options.getSolvers();
     tbb::task_scheduler_init init(number_of_threads);
 
@@ -18,9 +22,9 @@ auto main(int argc, char* argv[])
     auto graph = [&] {
         switch(parse_mode) {
         case ParseMode::VERTEX_LIST:
-            return parseVertexListFile(graph_file, use_inverse, false, !options.printRaw());
+            return parseVertexListFile(graph_file, use_inverse, false, random_edge_weights, !options.printRaw());
         case ParseMode::EDGE_LIST:
-            return parseEdgeListFile(graph_file, use_inverse, false, !options.printRaw());
+            return parseEdgeListFile(graph_file, use_inverse, false, random_edge_weights, !options.printRaw());
         default:
             fmt::print("unknown parse mode\n");
             std::exit(-1);
